@@ -1,0 +1,251 @@
+{
+    "$schema": "https://opencode.ai/config.json",
+    "model": "openai/gpt-5.4",
+    "small_model": "opencode-go/glm-5",
+    "default_agent": "worker",
+    "compaction": {
+        "auto": true,
+        "prune": true,
+        "reserved": 12000
+    },
+    "instructions": [
+        "./instructions.md",
+        "./instructions/agent-routing.md",
+        "./instructions/frontend-design.md",
+        "./instructions/teamwork-continuation.md",
+        "./instructions/code-quality.md"
+    ],
+    "plugin": [
+        "opencode-shell-strategy"
+    ],
+    "command": {
+        "ship": {
+            "description": "Implement with worker teamwork flow",
+            "agent": "worker",
+            "template": "Implement the requested change using the full worker flow: understand the requirement, gather targeted context, delegate code changes to the implementation subagent, review non-trivial changes, verify results, and return a concise production-ready summary."
+        },
+        "frontend": {
+            "description": "Run a design-led frontend task",
+            "agent": "worker",
+            "template": "Treat this as a design-led frontend task. Lock the purpose, audience, tone, visual direction, and one memorable idea first. Use the frontend-design skill and the frontend_brief tool before implementation, then delegate coding and verify responsiveness/accessibility. Task: $ARGUMENTS"
+        },
+        "resume-safe": {
+            "description": "Continue safely with fallback handoff",
+            "agent": "worker",
+            "template": "Continue the current task safely. Reconstruct the current objective, active files, acceptance criteria, completed work, remaining work, blockers, and verification state. If the implementation path is blocked by context, tool, or model limits, generate a structured handoff and continue with the backup implementation agent instead of restarting."
+        }
+    },
+    "permission": {
+        "workflow_handoff": "allow",
+        "frontend_brief": "allow",
+        "clean_code_guard": "allow"
+    },
+    "provider": {
+        "openai": {
+            "models": {
+                "gpt-5.4": {
+                    "options": {
+                        "reasoningEffort": "high",
+                        "textVerbosity": "medium",
+                        "reasoningSummary": "concise"
+                    }
+                }
+            }
+        },
+        "openrouter": {
+            "models": {
+                "deepseek/deepseek-v3.2": {
+                    "name": "DeepSeek V3.2",
+                    "options": {
+                        "provider": {
+                            "allow_fallbacks": true
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "lsp": {
+        "tailwindcss": {
+            "command": [
+                "npx",
+                "@tailwindcss/language-server",
+                "--stdio"
+            ],
+            "extensions": [
+                ".html",
+                ".css",
+                ".js",
+                ".ts",
+                ".jsx",
+                ".tsx",
+                ".vue",
+                ".svelte"
+            ]
+        }
+    },
+    "agent": {
+        "build": {
+            "description": "Full-access implementation agent for direct coding tasks",
+            "mode": "primary",
+            "model": "openai/gpt-5.4",
+            "prompt": "{file:./prompts/build.txt}",
+            "steps": 16,
+            "permission": {
+                "skill": {
+                    "*": "allow",
+                    "pr-review": "allow",
+                    "internal-*": "deny",
+                    "experimental-*": "ask"
+                }
+            }
+        },
+        "plan": {
+            "description": "Read-only planner for analysis and implementation planning",
+            "mode": "primary",
+            "model": "openai/gpt-5.4",
+            "temperature": 0.1,
+            "steps": 10,
+            "permission": {
+                "todowrite": "allow",
+                "skill": {
+                    "*": "allow",
+                    "pr-review": "allow",
+                    "internal-*": "deny",
+                    "experimental-*": "ask"
+                }
+            }
+        },
+        "worker": {
+            "description": "Plans and orchestrates work with GPT-5.4, delegating implementation to specialized subagents",
+            "mode": "primary",
+            "model": "openai/gpt-5.4",
+            "prompt": "{file:./prompts/worker.txt}",
+            "temperature": 0.2,
+            "steps": 12,
+            "color": "info",
+            "permission": {
+                "edit": "deny",
+                "bash": "deny",
+                "task": {
+                    "*": "deny",
+                    "worker-impl": "allow",
+                    "worker-impl-backup": "allow",
+                    "worker-review": "allow",
+                    "general": "allow",
+                    "explore": "allow"
+                },
+                "skill": {
+                    "*": "allow",
+                    "pr-review": "allow",
+                    "internal-*": "deny",
+                    "experimental-*": "ask"
+                }
+            }
+        },
+        "worker-impl": {
+            "description": "Hidden implementation subagent that applies code changes with DeepSeek and verifies results",
+            "mode": "subagent",
+            "hidden": true,
+            "model": "openrouter/deepseek/deepseek-v3.2",
+            "prompt": "{file:./prompts/worker-impl.txt}",
+            "temperature": 0.1,
+            "steps": 16,
+            "permission": {
+                "task": {
+                    "*": "deny"
+                },
+                "skill": {
+                    "*": "allow",
+                    "pr-review": "allow",
+                    "internal-*": "deny",
+                    "experimental-*": "ask"
+                }
+            }
+        },
+        "worker-impl-backup": {
+            "description": "Backup implementation subagent that continues from handoff when worker-impl is blocked",
+            "mode": "subagent",
+            "hidden": true,
+            "model": "opencode-go/glm-5",
+            "prompt": "{file:./prompts/worker-impl-backup.txt}",
+            "temperature": 0.1,
+            "steps": 16,
+            "permission": {
+                "task": {
+                    "*": "deny"
+                },
+                "skill": {
+                    "*": "allow",
+                    "pr-review": "allow",
+                    "internal-*": "deny",
+                    "experimental-*": "ask"
+                }
+            }
+        },
+        "worker-review": {
+            "description": "Code review subagent that checks for clean code, correctness, and unnecessary complexity",
+            "mode": "subagent",
+            "hidden": true,
+            "model": "openai/gpt-5.4",
+            "prompt": "{file:./prompts/worker-review.txt}",
+            "temperature": 0.1,
+            "steps": 8,
+            "permission": {
+                "edit": "deny",
+                "bash": "deny",
+                "webfetch": "deny",
+                "task": {
+                    "*": "deny"
+                },
+                "skill": {
+                    "*": "allow",
+                    "pr-review": "allow",
+                    "internal-*": "deny",
+                    "experimental-*": "ask"
+                }
+            }
+        }
+    },
+    "watcher": {
+        "ignore": [
+            "node_modules/**",
+            "dist/**",
+            ".git/**",
+            "venv/**",
+            ".next/**",
+            ".turbo/**",
+            ".cache/**",
+            "coverage/**",
+            "build/**"
+        ]
+    },
+    "formatter": {
+        "prettier": {
+            "disabled": false
+        },
+        "uv": {
+            "disabled": false
+        }
+    },
+    "mcp": {
+        "context7": {
+            "type": "remote",
+            "url": "https://mcp.context7.com/mcp",
+            // Add your own API key locally via /connect or by uncommenting the headers block below.
+            // "headers": {
+            //     "CONTEXT7_API_KEY": "YOUR_CONTEXT7_API_KEY"
+            // },
+            "enabled": true
+        },
+        "playwright": {
+            "type": "local",
+            "command": [
+                "npx",
+                "-y",
+                "@playwright/mcp@latest"
+            ],
+            "enabled": true
+        }
+    }
+}
