@@ -1,5 +1,12 @@
 {
+  "scripts": {
+    "apply-local-config": "node scripts/apply-local-config.mjs",
+    "apply-profile": "node scripts/apply-profile.mjs",
+    "reset-config": "node scripts/reset-config.mjs",
+    "sync-config": "node scripts/sync-config.mjs"
+  },
   "dependencies": {
-    "@opencode-ai/plugin": "1.4.11"
+    "@opencode-ai/plugin": "1.4.11",
+    "jsonc-parser": "^3.3.1"
   }
 }

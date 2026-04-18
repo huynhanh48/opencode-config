@@ -18,6 +18,7 @@ Production-oriented global OpenCode config with:
 - **Local plugin hooks** loaded from `~/.config/opencode/plugins/`
 - **Profiles** to enable extra ecosystem plugins without bloating the base config
 - **No default npm plugin dependency** in the base config, so fresh installs do not fail on missing community packages
+- **Public-safe / local-secret split** so you can publish the repo without leaking keys
 
 ## Clone & Install
 
@@ -31,29 +32,55 @@ cd ~/.config/opencode && bun install
 - clones this repo into your global OpenCode config directory
 - installs dependencies needed by local plugins and local custom tools
 - keeps optional npm ecosystem plugins out of the default install path unless you opt into a profile
+- uses Bun as the canonical dependency and lockfile workflow
+
+## Config Layers
+
+This repo is split into three config layers:
+
+- `opencode.public.jsonc` → tracked **public-safe source of truth**
+- `opencode.local.jsonc` → ignored **local override file** for secrets and personal plugins
+- `opencode.jsonc` → generated **runtime config** used by OpenCode
+
+This keeps GitHub safe while still letting you use local secrets and local plugin choices.
 
 ## After Install
 
-### 1. Add your own Context7 credentials
+### 1. Create your local override file
+
+```bash
+cp opencode.local.example.jsonc opencode.local.jsonc
+```
+
+### 2. Add your own Context7 credentials
 
 This repo does **not** ship a real API key.
 
-Use one of these approaches:
-
-- configure Context7 with OpenCode's `/connect` flow
-- or edit `opencode.jsonc` locally and uncomment:
+Edit `opencode.local.jsonc` and set your key:
 
 ```jsonc
-"headers": {
-  "CONTEXT7_API_KEY": "YOUR_CONTEXT7_API_KEY"
+{
+  "mcp": {
+    "context7": {
+      "headers": {
+        "CONTEXT7_API_KEY": "YOUR_CONTEXT7_API_KEY"
+      }
+    }
+  }
 }
 ```
 
-### 2. Restart OpenCode
+### 3. Generate the runtime config
+
+```bash
+bun run apply-local-config
+```
+
+### 4. Restart OpenCode
 
 Local plugins and local custom tools are loaded at startup.
 
-### 3. Verify the setup
+### 5. Verify the setup
 
 You should see or be able to use:
 
@@ -90,11 +117,19 @@ The goal is to keep the base config:
 ~/.config/opencode/
 ├── README.md
 ├── opencode.jsonc
+├── opencode.public.jsonc
+├── opencode.local.example.jsonc
 ├── tui.json
 ├── AGENTS.md
 ├── instructions.md
 ├── package.json
 ├── .gitignore
+├── scripts/
+│   ├── config-utils.mjs
+│   ├── sync-config.mjs
+│   ├── reset-config.mjs
+│   ├── apply-local-config.mjs
+│   └── apply-profile.mjs
 ├── prompts/
 │   ├── build.txt
 │   ├── worker.txt
@@ -125,6 +160,16 @@ The goal is to keep the base config:
 │   ├── research-web.jsonc
 │   └── quality-of-life.jsonc
 └── skills/
+```
+
+Local-only runtime layering:
+
+```text
+~/.config/opencode/
+├── opencode.public.jsonc        # tracked public-safe config
+├── opencode.local.example.jsonc # tracked example for local overrides
+├── opencode.local.jsonc         # ignored local overrides with secrets
+└── opencode.jsonc               # generated runtime config
 ```
 
 ## Core Architecture
@@ -192,6 +237,8 @@ Returns a compact checklist to reduce:
 `plugins/teamwork.ts` currently handles:
 
 - `.env` access protection for `read` / `edit` / `write`
+- interactive bash guard for commands likely to hang or require TTY input
+- dangerous bash guard for destructive shell patterns
 - extra compaction context so continuation summaries preserve teamwork state
 
 ## Profiles
@@ -202,12 +249,59 @@ They are **not** auto-enabled.
 
 Use them when you want to extend the base config.
 
+OpenCode does **not** automatically inspect `profiles/` and choose one for you at runtime.
+
+If you want to use a profile, you must merge its `plugin` list into your effective config, usually through `opencode.local.jsonc`.
+
+This repo also ships a helper command so you do not need to merge by hand.
+
+### Apply a profile with the helper
+
+```bash
+bun run apply-profile observability
+```
+
+This merges the selected profile into `opencode.local.jsonc` and regenerates `opencode.jsonc`.
+
+List profiles with:
+
+```bash
+bun run apply-profile --list
+```
+
+### Example: enable a profile manually
+
+If `profiles/observability.jsonc` contains:
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": [
+    "opencode-helicone-session",
+    "opencode-sentry-monitor"
+  ]
+}
+```
+
+then you manually copy the plugin names into `opencode.local.jsonc`:
+
+```jsonc
+{
+  "plugin": [
+    "opencode-helicone-session",
+    "opencode-sentry-monitor"
+  ]
+}
+```
+
+You can also combine multiple profiles by merging their plugin arrays yourself, or by running `bun run apply-profile` multiple times.
+
 ### Available profiles
 
 | Profile | Purpose |
 |---|---|
-| `core.jsonc` | shell safety baseline |
-| `context-efficiency.jsonc` | better context pruning + type injection |
+| `core.jsonc` | baseline profile with no extra npm plugins |
+| `context-efficiency.jsonc` | placeholder profile for future verified context plugins |
 | `typescript.jsonc` | TypeScript/Svelte-focused enhancement |
 | `security.jsonc` | redaction/security-oriented plugins |
 | `observability.jsonc` | monitor agent behavior and sessions |
@@ -258,21 +352,42 @@ This config optimizes for:
 
 ## Public Repo Notes
 
-- do **not** commit real API keys into `opencode.jsonc`
+- do **not** commit real API keys into `opencode.public.jsonc`
+- keep secrets inside `opencode.local.jsonc`
+- run `bun run reset-config` before committing if your local runtime config contains overrides
 - keep `node_modules/` out of git
 - local plugin/tools need `bun install`
 - npm plugins declared in `plugin` are resolved by OpenCode at startup
 - ecosystem listing does not always guarantee npm availability; this repo keeps the default path conservative to avoid install failures
 
+## Helper Commands
+
+```bash
+bun run sync-config         # rebuild opencode.jsonc from public + local
+bun run apply-local-config  # validate local overrides exist, then rebuild runtime config
+bun run apply-profile NAME  # merge a profile into opencode.local.jsonc and rebuild runtime config
+bun run reset-config        # restore opencode.jsonc to the public-safe base
+```
+
+## Lockfile Strategy
+
+This repo uses **Bun as the canonical package manager** for local plugin/tool dependencies.
+
+- use `bun install`
+- commit `bun.lock`
+- ignore `package-lock.json`
+
 ## Recommended First Use
 
 After installing:
 
-1. configure your own Context7 access
-2. start OpenCode
-3. run a simple task with `worker`
-4. test a frontend task using `frontend`
-5. test a long task and verify fallback/handoff behavior
+1. copy `opencode.local.example.jsonc` to `opencode.local.jsonc`
+2. add your Context7 key
+3. run `bun run apply-local-config`
+4. start OpenCode
+5. run a simple task with `worker`
+6. test a frontend task using `frontend`
+7. test a long task and verify fallback/handoff behavior
 
 ## License
 
