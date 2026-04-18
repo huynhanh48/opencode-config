@@ -10,8 +10,8 @@ Các file trong thư mục này là **snippet config** để bật thêm ecosyst
 
 ## Profiles
 
-- `core.jsonc` — plugin nền an toàn cho shell strategy.
-- `context-efficiency.jsonc` — giảm context noise và tăng chất lượng đọc code.
+- `core.jsonc` — baseline profile, không thêm npm plugin mặc định.
+- `context-efficiency.jsonc` — profile placeholder cho tối ưu context; hiện để trống vì các ecosystem entries tương ứng chưa có npm package khả dụng lúc kiểm tra.
 - `typescript.jsonc` — tối ưu riêng cho TypeScript/Svelte-heavy repos.
 - `security.jsonc` — bảo vệ secret/PII tốt hơn.
 - `observability.jsonc` — theo dõi session và debug hành vi agent.
@@ -27,3 +27,4 @@ Các file trong thư mục này là **snippet config** để bật thêm ecosyst
 - Ưu tiên `core`, sau đó thêm theo use case thật.
 - Các plugin orchestration nặng không được bật mặc định vì có thể chồng chéo với kiến trúc `worker`/`worker-impl`/`worker-review`.
 - Các auth plugins không được gom thành một profile mặc định vì chúng phụ thuộc nhà cung cấp và thường loại trừ lẫn nhau.
+- Một số ecosystem entries là repo/community listing nhưng không có npm package khả dụng tại thời điểm kiểm tra; các profile tương ứng đã được để trống hoặc chỉ giữ package đã xác minh trên npm.

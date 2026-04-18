@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": [
-    "opencode-shell-strategy"
-  ]
+  // Core profile intentionally uses no npm plugins.
+  // The base config already relies on local tools and local plugin hooks.
+  "plugin": []
 }

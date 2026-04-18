@@ -17,6 +17,7 @@ Production-oriented global OpenCode config with:
 - **Custom tools** loaded from `~/.config/opencode/tools/`
 - **Local plugin hooks** loaded from `~/.config/opencode/plugins/`
 - **Profiles** to enable extra ecosystem plugins without bloating the base config
+- **No default npm plugin dependency** in the base config, so fresh installs do not fail on missing community packages
 
 ## Clone & Install
 
@@ -29,7 +30,7 @@ cd ~/.config/opencode && bun install
 
 - clones this repo into your global OpenCode config directory
 - installs dependencies needed by local plugins and local custom tools
-- keeps npm-based OpenCode plugins managed by OpenCode itself on startup
+- keeps optional npm ecosystem plugins out of the default install path unless you opt into a profile
 
 ## After Install
 
@@ -218,6 +219,14 @@ Use them when you want to extend the base config.
 
 See `profiles/README.md` for details.
 
+### Verified plugin policy
+
+This repo only enables **verified-safe defaults** in the main config.
+
+- The base config uses **local tools** and **local plugin hooks** by default.
+- Optional profiles contain only plugins that were checked against npm at verification time.
+- If an ecosystem item exists as a GitHub/community plugin but is not installable from npm, it is **not enabled by default** here.
+
 ## Included MCP / Tooling
 
 ### MCP
@@ -253,6 +262,7 @@ This config optimizes for:
 - keep `node_modules/` out of git
 - local plugin/tools need `bun install`
 - npm plugins declared in `plugin` are resolved by OpenCode at startup
+- ecosystem listing does not always guarantee npm availability; this repo keeps the default path conservative to avoid install failures
 
 ## Recommended First Use
 

@@ -15,9 +15,7 @@
         "./instructions/teamwork-continuation.md",
         "./instructions/code-quality.md"
     ],
-    "plugin": [
-        "opencode-shell-strategy"
-    ],
+    "plugin": [],
     "command": {
         "ship": {
             "description": "Implement with worker teamwork flow",
