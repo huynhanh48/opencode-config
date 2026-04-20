@@ -2,6 +2,7 @@
   "scripts": {
     "apply-local-config": "node scripts/apply-local-config.mjs",
     "apply-profile": "node scripts/apply-profile.mjs",
+    "doctor": "node scripts/doctor.mjs",
     "reset-config": "node scripts/reset-config.mjs",
     "sync-config": "node scripts/sync-config.mjs"
   },

@@ -19,7 +19,7 @@
 - Prefer **targeted reads** over full-file reads when possible.
 - If a file is >500 lines, read only the sections needed.
 - Do NOT dump entire file trees into context — use targeted listing then drill down selectively.
-- When the conversation gets long, ask: "Should I summarise progress before continuing?"
+- When the conversation gets long, prefer compaction or a compact handoff packet over asking the user to restate progress.
 - When delegation is likely, preserve a compact handoff packet instead of relying on raw transcript continuity.
 - Treat compaction summaries as working state that must include objective, acceptance criteria, active files, blockers, verification, and next step.
 
@@ -29,7 +29,7 @@
 | `context7` | Looking up library docs, versions, API signatures |
 | `playwright` | Browser automation, E2E testing, UI verification |
 
-- Always try local knowledge first; call MCP only when needed.
+- Prefer local project knowledge first; when external library behavior is uncertain, call MCP early instead of guessing.
 - Call MCP tools in parallel when fetching independent pieces of info.
 
 ## LSP Intelligence

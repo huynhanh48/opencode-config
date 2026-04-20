@@ -7,9 +7,5 @@
             }
         }
     },
-    "plugin": [
-        "opencode-supermemory",
-        "opencode-wakatime",
-        "opencode-websearch-cited"
-    ]
+    "plugin": []
 }

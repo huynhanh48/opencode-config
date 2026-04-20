@@ -14,7 +14,7 @@ Production-oriented global OpenCode config with:
 - **Primary coder = `worker-impl`** using `openrouter/deepseek/deepseek-v3.2`
 - **Cheap fallback coder = `worker-impl-backup`** using `opencode-go/glm-5`
 - **Reviewer = `worker-review`** using `openai/gpt-5.4`
-- **End-to-End SEO Automation** integrated directly into frontend commands
+- **SEO-aware frontend workflow** integrated directly into frontend commands
 - **Error Resilience (Skip & Continue)** prevents token-drain from dead-end errors like bad images
 - **Parallel Tool Calling** for multi-file high speed analysis
 - **Custom tools** loaded from `~/.config/opencode/tools/`
@@ -23,18 +23,22 @@ Production-oriented global OpenCode config with:
 
 ## Enterprise-Grade Features (v2.0)
 
-### 1. End-to-End SEO Automation Pipeline
-When using the `/frontend` command, the system runs an automated SEO checklist:
-- **`worker`** automatically loads the `seo-optimizer` skill.
-- **`worker-impl`** & **`build`** maintain strict semantic HTML (h1→h2) and pre-fill `alt` tags and `width/height` attributes to prevent CLS.
-- **`worker-review`** acts as a QA gatekeeper, scanning 9 critical SEO checks (Metadata, Open Graph, Schema) and fails the commit if they are missing.
-- **Playwright MCP** is utilized to check the final *Rendered DOM* to ensure JS-frameworks (React/Vue/Svelte) didn't drop meta tags.
+### 1. SEO-Guided Frontend Workflow
+When using the `/frontend` command, the config routes work through SEO-focused instructions and review prompts:
+- **`worker`** is prompted to load the `seo-optimizer` skill for public-facing page work.
+- **`worker-impl`** & **`build`** preserve semantic HTML (h1→h2), descriptive `alt` text, and image dimensions to reduce CLS risk.
+- **`worker-review`** is prompted to flag critical SEO gaps during review (metadata, Open Graph tags, schema, heading hierarchy).
+- **Playwright MCP** can be used to verify the final *Rendered DOM* when a JS framework may alter metadata at runtime.
 
 ### 2. Guardrails & Token Optimization
-AI Agents can easily burn millions of tokens in endless loops. This config prevents that:
-- **Graceful Image Failure:** If an image is broken or unsupported, the agent logs `[SKIP]` and continues work immediately instead of halting and repeatedly trying to read it.
+AI agents can easily burn millions of tokens in endless loops. This config reduces that risk:
+- **Graceful Image Failure:** If an image is broken or unsupported, the agent logs `[SKIP: <reason>]` and continues work immediately instead of halting and repeatedly trying to read it.
 - **Max 1 Retry:** Faulty MCP Tool calls are limited to 1 retry.
-- **Context Compaction:** The `workflow_handoff` tool resets contexts into lightweight 500-token summaries when context limits are reached.
+- **Context Continuity:** `workflow_handoff` gives agents a compact, structured packet so fallback and continuation do not restart from scratch.
+- **Secret File Protection:** Blocks access to `.env`, credentials, SSH keys, and other sensitive files.
+- **Interactive Command Blocking:** Prevents agents from running `vim`, `ssh`, `npm init`, and other interactive commands that would hang.
+- **Dangerous Command Prevention:** Blocks `rm -rf`, force pushes, and other destructive operations without confirmation.
+- **Configuration Doctor:** `bun run doctor` validates config integrity, checks references, detects runtime drift, and checks for obvious secret leakage patterns.
 
 
 ## Clone & Install
@@ -50,6 +54,7 @@ cd ~/.config/opencode && bun install
 - installs dependencies needed by local plugins and local custom tools
 - keeps optional npm ecosystem plugins out of the default install path unless you opt into a profile
 - uses Bun as the canonical dependency and lockfile workflow
+- keeps `opencode.local.example.jsonc` minimal so fresh installs start with fewer failure points
 
 ## Config Layers
 
@@ -91,6 +96,18 @@ Edit `opencode.local.jsonc` and set your key:
 
 ```bash
 bun run apply-local-config
+```
+
+Optional quick health check:
+
+```bash
+bun run doctor
+```
+
+Public-repo safety check without reading local overrides:
+
+```bash
+OPENCODE_DOCTOR_SKIP_LOCAL=1 bun run doctor
 ```
 
 ### 4. Restart OpenCode
@@ -383,6 +400,7 @@ This config optimizes for:
 bun run sync-config         # rebuild opencode.jsonc from public + local
 bun run apply-local-config  # validate local overrides exist, then rebuild runtime config
 bun run apply-profile NAME  # merge a profile into opencode.local.jsonc and rebuild runtime config
+bun run doctor              # validate config integrity, references, runtime drift, and public-safe state
 bun run reset-config        # restore opencode.jsonc to the public-safe base
 ```
 

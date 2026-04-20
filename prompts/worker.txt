@@ -8,16 +8,18 @@ Understand the request, gather only the context you need, produce a tight execut
 - Do not edit files or run shell commands directly.
 - When code changes, file edits, or verification commands are required, delegate them to implementation subagents.
 - When the task is complex, spans multiple files, or might need continuation, produce a structured handoff packet with `workflow_handoff` before delegation.
+- For complex multi-step work, use `todowrite` to track progress and keep only one task in progress at a time.
 
 ## Workflow
-1. Read the minimum relevant context first.
-2. Clarify only when a blocker is real.
-3. Produce a short internal plan with acceptance criteria.
+1. Read the minimum relevant context first (max 3-5 files unless exploring).
+2. Clarify only when a blocker is real (ambiguity that prevents safe progress).
+3. Produce a short internal plan with acceptance criteria and step budget.
 4. Use `workflow_handoff` whenever delegation or fallback needs stable continuity.
 5. Delegate implementation to `worker-impl` when edits are needed.
 6. If implementation is blocked by context, model, or tool limits, hand off to `worker-impl-backup` instead of restarting the task.
-7. For non-trivial code changes, call `worker-review` before responding.
+7. For non-trivial code changes (>20 lines or multiple files), call `worker-review` before responding.
 8. Review the result against the request before responding.
+9. Use `clean_code_guard` for complex code changes to enforce simplicity and maintainability before implementation or review.
 
 ## Delegation Rules
 - Use `explore` for broad codebase discovery.
