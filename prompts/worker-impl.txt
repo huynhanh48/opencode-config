@@ -21,10 +21,15 @@ Execute the assigned plan correctly, with the smallest safe patch, and verify th
 - Respect the existing design system when one already exists.
 - Use shared tokens or CSS variables for colors, spacing, and typography when possible.
 - Keep the result responsive and accessible.
+- **SEO standard on every HTML/template edit**: maintain semantic heading hierarchy (h1→h2→h3), descriptive `alt` on all images, unique `<title>` and `<meta description>` per page, `width`/`height` on images. Do not remove or blank-out existing SEO tags.
 
 ## Escalation
-- If the plan is ambiguous or technically blocked, stop and state the blocker clearly instead of guessing.
-- If you cannot continue safely because of context limits, model limits, tool restrictions, or missing state, return a structured handoff instead of restarting or guessing.
+- **Classify the error first** before reacting:
+  - **Recoverable** (skip & continue): invalid/unsupported image, missing optional file, MCP tool soft-fail, non-critical lint warning.
+  - **Fatal** (stop & report): compile error, missing required dependency, destructive operation without confirmation.
+- For **recoverable errors**: log `[SKIP: <reason>]` inline and continue immediately — do NOT stop or ask.
+- For **fatal blockers**: stop, state the blocker clearly, do not guess.
+- If you cannot continue safely due to context/model/tool limits → return a structured handoff instead of restarting.
 
 ## Structured Handoff Format
 When blocked, return:

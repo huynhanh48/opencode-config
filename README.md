@@ -14,11 +14,28 @@ Production-oriented global OpenCode config with:
 - **Primary coder = `worker-impl`** using `openrouter/deepseek/deepseek-v3.2`
 - **Cheap fallback coder = `worker-impl-backup`** using `opencode-go/glm-5`
 - **Reviewer = `worker-review`** using `openai/gpt-5.4`
+- **End-to-End SEO Automation** integrated directly into frontend commands
+- **Error Resilience (Skip & Continue)** prevents token-drain from dead-end errors like bad images
+- **Parallel Tool Calling** for multi-file high speed analysis
 - **Custom tools** loaded from `~/.config/opencode/tools/`
 - **Local plugin hooks** loaded from `~/.config/opencode/plugins/`
-- **Profiles** to enable extra ecosystem plugins without bloating the base config
-- **No default npm plugin dependency** in the base config, so fresh installs do not fail on missing community packages
 - **Public-safe / local-secret split** so you can publish the repo without leaking keys
+
+## Enterprise-Grade Features (v2.0)
+
+### 1. End-to-End SEO Automation Pipeline
+When using the `/frontend` command, the system runs an automated SEO checklist:
+- **`worker`** automatically loads the `seo-optimizer` skill.
+- **`worker-impl`** & **`build`** maintain strict semantic HTML (h1→h2) and pre-fill `alt` tags and `width/height` attributes to prevent CLS.
+- **`worker-review`** acts as a QA gatekeeper, scanning 9 critical SEO checks (Metadata, Open Graph, Schema) and fails the commit if they are missing.
+- **Playwright MCP** is utilized to check the final *Rendered DOM* to ensure JS-frameworks (React/Vue/Svelte) didn't drop meta tags.
+
+### 2. Guardrails & Token Optimization
+AI Agents can easily burn millions of tokens in endless loops. This config prevents that:
+- **Graceful Image Failure:** If an image is broken or unsupported, the agent logs `[SKIP]` and continues work immediately instead of halting and repeatedly trying to read it.
+- **Max 1 Retry:** Faulty MCP Tool calls are limited to 1 retry.
+- **Context Compaction:** The `workflow_handoff` tool resets contexts into lightweight 500-token summaries when context limits are reached.
+
 
 ## Clone & Install
 

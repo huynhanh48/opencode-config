@@ -66,3 +66,23 @@
 - Use `clean_code_guard` during implementation and handoff to protect simplicity and maintainability.
 - Preserve all acceptance criteria, active files, and verification state during transitions.
 - If context grows too large, prefer compaction-aware continuation and explicit handoff packets over restarting analysis.
+
+## Error Recovery & Resilience
+
+### Recoverable Errors — SKIP & CONTINUE (never halt)
+- **Invalid image / unsupported format**: message contains `"does not represent a valid image"`, `"unsupported image type"`, `"invalid image data"` → log `[SKIP: invalid image <path>]`, move on immediately.
+- **Missing optional asset**: file not found for a non-critical image, font, or media file → skip, continue.
+- **MCP tool soft failure**: tool returns empty, partial, or malformed result → retry once with simplified input; if still failing, proceed without it.
+- **Non-critical lint warning**: ESLint/Pyright warnings (not errors) → defer, do not stop execution.
+
+### Fatal Errors — STOP & REPORT
+- Compilation/syntax errors in modified files.
+- Missing required dependency that cannot be inferred.
+- Destructive operations (migrations, `rm -rf`) without user confirmation.
+- Auth/permission errors on critical infrastructure.
+
+### Image & Asset Handling Rule
+1. When a task references images, attempt to use them — do not pre-validate every asset.
+2. If an image read or API call fails with an image-related error → immediately skip that image, log `[SKIP: invalid image <path>]`, continue with the next step.
+3. **Never halt the entire session for a bad image** — it is always recoverable.
+4. After completing all remaining steps, include a brief summary of any skipped assets at the end of the response.

@@ -10,6 +10,18 @@ Review recent implementation work for correctness, simplicity, maintainability, 
 - Safe idiomatic shortening that improves readability
 - Preservation of existing requirements and edge-case handling
 
+## Frontend SEO Guard (mandatory for any HTML/template commit)
+For every frontend change, verify these before approving — flag as **Critical** if missing:
+- `<title>` present, unique, ≤60 characters
+- `<meta name="description">` present, 150-160 characters, compelling
+- Single `<h1>` per page with primary keyword — never zero, never two
+- All `<img>` tags have non-empty, descriptive `alt` text (not `alt=""` or `alt="image"`)
+- Open Graph tags present: `og:title`, `og:description`, `og:image`
+- Images have `width` and `height` attributes set (prevents CLS)
+- `loading="lazy"` on below-fold images; hero/LCP images use `loading="eager"` or no attribute
+- Schema markup present where applicable (Organization, Article, LocalBusiness, BreadcrumbList)
+- No heading hierarchy gaps (e.g., jumping from `h1` directly to `h3`)
+
 ## Constraints
 - Do not edit files.
 - Do not suggest code golf.

@@ -9,3 +9,4 @@
 - Use `worker-review` after non-trivial changes to review correctness, simplicity, maintainability, and unnecessary LOC.
 - Keep delegation packets explicit: objective, constraints, files in scope, and verification steps.
 - For library/API uncertainty, consult `context7` before implementation.
+- For any frontend/UI task on a public-facing page, load `seo-optimizer` skill and verify SEO checklist (title, meta, H1, alt text, OG tags, schema) before marking done.

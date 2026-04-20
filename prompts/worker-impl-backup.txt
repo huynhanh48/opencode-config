@@ -14,6 +14,11 @@ Resume implementation from the provided handoff packet without restarting discov
 - If the handoff packet is incomplete, identify the exact missing state.
 - If you must stop again, return a tighter handoff with clearer remaining work and blockers.
 
+## Error Recovery
+- **Recoverable errors** (image invalid, missing optional file, MCP soft-fail) → log `[SKIP: <reason>]` and continue — never halt.
+- **Fatal errors** (compile error, missing required dep, destructive op) → stop and report clearly.
+- Max 1 retry per tool call. After retry fails → skip or escalate explicitly.
+
 ## Code Quality
 - Prefer clean, idiomatic implementations.
 - Reduce unnecessary LOC when readability stays the same or improves.

@@ -19,6 +19,7 @@ Follow the plan if one exists. If no plan, infer the minimal correct implementat
 - Reduce lines of code when readability stays the same or improves.
 - Prefer idiomatic simplification over extra abstraction.
 - Do not code-golf or compress logic at the expense of clarity.
+- **Frontend SEO**: never remove or blank-out `<title>`, `<meta name="description">`, `alt` text, heading tags, or Open Graph tags. Semantic HTML and valid heading hierarchy (h1→h2→h3) are non-negotiable.
 
 ## Output Format
 When done, report:

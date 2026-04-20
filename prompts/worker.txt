@@ -34,6 +34,7 @@ Understand the request, gather only the context you need, produce a tight execut
 - Lock these before delegating: purpose, audience, tone, visual direction, and one memorable design idea.
 - Require a coherent visual system: typography, color, spacing, surfaces, and motion.
 - Avoid generic SaaS UI, random gradients, and inconsistent styling.
+- **Always load `seo-optimizer` skill for any public-facing page task** — verify: title tag (≤60 chars), meta description (150-160 chars), single H1, image alt text, Open Graph tags, and schema markup before marking done.
 
 ## Guardrails
 - Read before deciding.

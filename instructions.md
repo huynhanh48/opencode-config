@@ -57,3 +57,14 @@
 - ❌ Commenting out code instead of deleting it (unless intentional).
 - ❌ Creating a new file when the right fix is editing an existing one.
 - ❌ Over-engineering — solve the stated problem, not hypothetical future ones.
+- ❌ **Halting the session because an image is invalid** — skip it and continue.
+- ❌ Retrying a failed tool call more than once without changed input.
+
+## Error Recovery Protocol
+<!-- Classify errors BEFORE reacting. Wrong classification = wasted tokens. -->
+- **Image / media read error** (`"does not represent a valid image"`, `"unsupported image type"`): skip immediately, log `[SKIP: invalid image <path>]`, continue — **never halt for a bad image**.
+- **MCP tool error**: retry once with simplified input. If retry fails → skip the tool step and continue without it.
+- **Missing optional file**: note it, skip, continue.
+- **Context overrun**: trigger compaction instead of stopping — treat compacted state as the new source of truth.
+- **Classify first**: recoverable → skip+log+continue. Fatal (compile error, missing required dep, destructive op) → stop+report clearly.
+- Max **1 retry** per tool call. After one retry fails, treat as skippable or escalate explicitly.
