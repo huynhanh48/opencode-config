@@ -64,6 +64,28 @@
         }
     },
     "lsp": {
+        "pyright": {
+            "command": [
+                "pyright-langserver",
+                "--stdio"
+            ],
+            "extensions": [
+                ".py",
+                ".pyi"
+            ],
+            "initialization": {
+                "python": {
+                    "analysis": {
+                        "typeCheckingMode": "basic",
+                        "autoSearchPaths": true,
+                        "useLibraryCodeForTypes": true,
+                        "diagnosticMode": "workspace",
+                        "autoImportCompletions": true,
+                        "indexing": true
+                    }
+                }
+            }
+        },
         "tailwindcss": {
             "command": [
                 "npx",
@@ -80,6 +102,28 @@
                 ".vue",
                 ".svelte"
             ]
+        },
+        "typescript": {
+            "command": [
+                "typescript-language-server",
+                "--stdio"
+            ],
+            "extensions": [
+                ".ts",
+                ".tsx",
+                ".js",
+                ".jsx",
+                ".mjs",
+                ".cjs",
+                ".mts",
+                ".cts"
+            ],
+            "initialization": {
+                "preferences": {
+                    "importModuleSpecifierPreference": "relative",
+                    "includePackageJsonAutoImports": "auto"
+                }
+            }
         }
     },
     "agent": {

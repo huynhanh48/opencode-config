@@ -17,6 +17,7 @@ Production-oriented global OpenCode config with:
 - **SEO-aware frontend workflow** integrated directly into frontend commands
 - **Error Resilience (Skip & Continue)** prevents token-drain from dead-end errors like bad images
 - **Parallel Tool Calling** for multi-file high speed analysis
+- **Curated LSP presets** for Pyright and TypeScript/JavaScript projects
 - **Custom tools** loaded from `~/.config/opencode/tools/`
 - **Local plugin hooks** loaded from `~/.config/opencode/plugins/`
 - **Public-safe / local-secret split** so you can publish the repo without leaking keys
@@ -127,6 +128,31 @@ You should see or be able to use:
   - `workflow_handoff`
   - `frontend_brief`
   - `clean_code_guard`
+
+### 6. Optional LSP binaries
+
+For the custom global LSP entries in this repo, install the supporting binaries if they are not already available:
+
+```bash
+npm install -g pyright typescript typescript-language-server
+```
+
+If you launch OpenCode from a macOS GUI app and it cannot see Homebrew binaries on `PATH`, add a local-only override in `opencode.local.jsonc`:
+
+```jsonc
+{
+  "lsp": {
+    "pyright": {
+      "command": ["/opt/homebrew/bin/pyright-langserver", "--stdio"]
+    },
+    "typescript": {
+      "command": ["/opt/homebrew/bin/typescript-language-server", "--stdio"]
+    }
+  }
+}
+```
+
+This keeps the tracked public config portable while making the generated runtime config reliable for GUI launches on macOS.
 
 ## Install Philosophy
 
@@ -365,7 +391,9 @@ This repo only enables **verified-safe defaults** in the main config.
 ### LSP
 
 - custom `tailwindcss` language server
-- built-in TypeScript / ESLint / Pyright support from OpenCode ecosystem
+- custom `pyright` preset for `.py` / `.pyi` with FastAPI / SQLAlchemy / Pydantic-friendly analysis defaults
+- custom `typescript-language-server` preset for `.ts` / `.tsx` / `.js` / `.jsx` / `.mjs` / `.cjs` / `.mts` / `.cts`
+- built-in OpenCode LSP ecosystem still applies for other supported languages and servers
 
 ### Formatters
 
